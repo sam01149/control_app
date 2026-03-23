@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONTROL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --border-active: #444444;
+    --text: #e8e8e8;
+    --text-dim: #666666;
+    --text-dimmer: #3a3a3a;
+    --valid: #e8e8e8;
+    --invalid: #e8e8e8;
+    --valid-bg: #0f1a0f;
+    --invalid-bg: #1a0f0f;
+    --valid-border: #1e3a1e;
+    --invalid-border: #3a1e1e;
+    --valid-dot: #4caf50;
+    --invalid-dot: #f44336;
+    --ongoing-dot: #ff9800;
+    --accent: #ffffff;
+    --danger: #cc3333;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .header-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .header-title span { color: var(--text-dim); font-weight: 400; }
+
+  /* ── NAV ── */
+  .nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 12px 16px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .nav-btn.active {
+    color: var(--text);
+    border-bottom-color: var(--text);
+  }
+  .nav-btn:hover { color: var(--text); }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 16px; max-width: 720px; margin: 0 auto; width: 100%; }
+  .page.active { display: block; }
+
+  /* ── SECTION ── */
+  .section {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    margin-bottom: 12px;
+  }
+  .section-header {
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .section-body { padding: 14px; }
+
+  /* ── STATUS ── */
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .status-date {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .status-badge {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-badge.valid { background: var(--valid-bg); border-color: var(--valid-border); }
+  .status-badge.invalid { background: var(--invalid-bg); border-color: var(--invalid-border); }
+  .status-badge.ongoing { background: var(--surface2); border-color: var(--border-active); }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot-valid { background: var(--valid-dot); }
+  .dot-invalid { background: var(--invalid-dot); }
+  .dot-ongoing { background: var(--ongoing-dot); }
+
+  .indicator-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .indicator {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+  }
+  .indicator.done { border-color: var(--valid-border); background: var(--valid-bg); color: var(--text); }
+  .indicator.fail { border-color: var(--invalid-border); background: var(--invalid-bg); color: var(--text); }
+  .indicator-mark { font-size: 13px; }
+
+  /* ── CHECKLIST BLOCKS ── */
+  .block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .block-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .block-status-text {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dimmer);
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .checklist-item:last-child { border-bottom: none; }
+  .checklist-item:hover .check-box { border-color: var(--border-active); }
+
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.1s;
+  }
+  .check-box.checked {
+    background: var(--valid-bg);
+    border-color: var(--valid-border);
+    color: var(--valid-dot);
+  }
+  .check-box.violated {
+    background: var(--invalid-bg);
+    border-color: var(--invalid-border);
+    color: var(--invalid-dot);
+  }
+
+  .check-text {
+    font-size: 13px;
+    line-height: 1.4;
+    padding-top: 2px;
+  }
+  .check-text.checked { color: var(--text-dim); text-decoration: line-through; }
+
+  .block-separator { margin: 12px 0; border: none; border-top: 1px solid var(--border); }
+
+  /* ── EMERGENCY BUTTONS ── */
+  .emergency-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .emergency-grid .btn-full { grid-column: 1 / -1; }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    transition: background 0.1s, border-color 0.1s;
+    line-height: 1.3;
+  }
+  .btn:hover { background: var(--surface); border-color: var(--border-active); }
+  .btn:active { background: var(--bg); }
+
+  .btn-danger {
+    border-color: var(--invalid-border);
+    background: var(--invalid-bg);
+    color: #ff6b6b;
+  }
+  .btn-danger:hover { background: #2a0f0f; border-color: #5a2020; }
+
+  .btn-action {
+    border-color: #1e2e3a;
+    background: #0d1a22;
+    color: #6ab4d4;
+  }
+  .btn-action:hover { background: #0f2030; }
+
+  .btn-neutral {
+    border-color: var(--border-active);
+    background: var(--surface2);
+    color: var(--text-dim);
+  }
+
+  /* ── LOG FORM ── */
+  .form-row { margin-bottom: 10px; }
+  .form-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: block;
+    margin-bottom: 5px;
+  }
+  .form-select, .form-input, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px 10px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .form-select:focus, .form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--border-active);
+  }
+  .form-textarea { resize: vertical; min-height: 60px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* ── RULES PAGE ── */
+  .rule-block {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    margin-bottom: 8px;
+  }
+  .rule-block.critical {
+    border-color: var(--invalid-border);
+    background: var(--invalid-bg);
+  }
+  .rule-block-header {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .rule-block.critical .rule-block-header {
+    border-bottom-color: var(--invalid-border);
+    color: #ff6b6b;
+  }
+  .rule-block-body { padding: 12px 14px; }
+
+  .rule-item {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .rule-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .rule-item:first-child { padding-top: 0; }
+  .rule-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dimmer);
+    padding-top: 3px;
+    flex-shrink: 0;
+    width: 16px;
+  }
+  .rule-action-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .rule-action-box .arrow { color: var(--text-dimmer); }
+
+  /* ── ANALYTICS ── */
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .score-card {
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    padding: 14px;
+    text-align: center;
+  }
+  .score-card.valid-card { border-color: var(--valid-border); background: var(--valid-bg); }
+  .score-card.invalid-card { border-color: var(--invalid-border); background: var(--invalid-bg); }
+  .score-number {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .score-card.valid-card .score-number { color: var(--valid-dot); }
+  .score-card.invalid-card .score-number { color: var(--invalid-dot); }
+  .score-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .pattern-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .pattern-item:last-child { border-bottom: none; }
+  .pattern-key { color: var(--text-dim); font-family: var(--mono); font-size: 11px; }
+  .pattern-val { font-family: var(--mono); font-size: 11px; color: var(--text); }
+  .pattern-bar-wrap {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    margin-top: 4px;
+  }
+  .pattern-bar { height: 4px; background: var(--text-dim); }
+
+  .chart-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 80px;
+    padding: 0 0 24px;
+    position: relative;
+  }
+  .chart-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .chart-bar {
+    width: 100%;
+    background: var(--border-active);
+    transition: height 0.3s;
+    min-height: 2px;
+  }
+  .chart-bar.high { background: var(--valid-dot); opacity: 0.7; }
+  .chart-bar.mid { background: var(--ongoing-dot); opacity: 0.7; }
+  .chart-bar.low { background: var(--invalid-dot); opacity: 0.7; }
+  .chart-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dimmer);
+    margin-top: 6px;
+    white-space: nowrap;
+  }
+
+  /* ── HISTORY ── */
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .filter-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+  .filter-btn.active { border-color: var(--border-active); color: var(--text); background: var(--surface); }
+
+  .history-item {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    margin-bottom: 6px;
+    padding: 12px 14px;
+  }
+  .history-item.invalid { border-left: 3px solid var(--invalid-dot); }
+  .history-item.valid { border-left: 3px solid var(--valid-dot); }
+  .history-item.ongoing { border-left: 3px solid var(--ongoing-dot); }
+  .history-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .history-date { font-family: var(--mono); font-size: 12px; color: var(--text); }
+  .history-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border: 1px solid;
+  }
+  .history-tag.valid { color: var(--valid-dot); border-color: var(--valid-border); }
+  .history-tag.invalid { color: var(--invalid-dot); border-color: var(--invalid-border); }
+  .history-tag.ongoing { color: var(--ongoing-dot); border-color: #3a2e10; }
+  .history-meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .history-meta span { color: var(--text-dimmer); font-family: var(--mono); font-size: 10px; margin-right: 4px; }
+  .history-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--border-active);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 10px 18px;
+    z-index: 999;
+    transition: transform 0.2s;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.danger { border-color: var(--invalid-border); color: #ff6b6b; }
+  .toast.success { border-color: var(--valid-border); color: var(--valid-dot); }
+
+  /* ── POST-INVALID BANNER ── */
+  .post-invalid-banner {
+    background: var(--invalid-bg);
+    border: 1px solid var(--invalid-border);
+    border-left: 3px solid var(--invalid-dot);
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .post-invalid-banner.show { display: block; }
+  .post-invalid-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ff6b6b;
+    margin-bottom: 6px;
+  }
+  .post-invalid-rules {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-active);
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 0 4px;
+  }
+  .modal-body { padding: 16px; }
+  .modal-trigger-text {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: #ff6b6b;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .modal-instruction {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .modal-steps {
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    background: var(--surface2);
+  }
+  .modal-step {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    display: flex;
+    gap: 8px;
+  }
+  .modal-step:last-child { border-bottom: none; }
+  .modal-step-num { color: var(--text-dimmer); }
+  .modal-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .header { padding: 0 12px; }
+    .page { padding: 10px; }
+    .section-body { padding: 10px; }
+    .emergency-grid { grid-template-columns: 1fr; }
+    .emergency-grid .btn-full { grid-column: 1; }
+    .score-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .chart-wrap { height: 64px; }
+    .modal-trigger-text { font-size: 18px; }
+  }
+
+  @media (max-width: 360px) {
+    .nav-btn { padding: 10px 12px; font-size: 10px; }
+    .score-number { font-size: 26px; }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-dimmer);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+
+  .inline-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-title">DAUN MERAH <span>/ PMO CONTROL</span></div>
+    <div id="headerDate" style="font-family:var(--mono);font-size:11px;color:var(--text-dim);"></div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="nav-btn active" onclick="goPage('dashboard')">Dashboard</button>
+    <button class="nav-btn" onclick="goPage('rules')">Rules</button>
+    <button class="nav-btn" onclick="goPage('analytics')">Analytics</button>
+    <button class="nav-btn" onclick="goPage('history')">History</button>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       PAGE: DASHBOARD
+  ══════════════════════════════════════ -->
+  <div class="page active" id="page-dashboard">
+
+    <!-- POST-INVALID BANNER -->
+    <div class="post-invalid-banner" id="postInvalidBanner">
+      <div class="post-invalid-title">⚠ POST-INVALID MODE AKTIF</div>
+      <div class="post-invalid-rules">
+        • 24 jam tanpa reels<br>
+        • HP hanya fungsi penting<br>
+        • Semua trigger = A Setup
+      </div>
+    </div>
+
+    <!-- A. STATUS HARI INI -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">A. Status Hari Ini</span>
+      </div>
+      <div class="section-body">
+        <div class="status-row">
+          <div class="status-date" id="statusDate">—</div>
+          <div class="status-badge ongoing" id="statusBadge">
+            <span class="status-dot dot-ongoing" id="statusDot"></span>
+            <span id="statusText">ONGOING</span>
+          </div>
+        </div>
+        <div class="indicator-row" id="indicatorRow">
+          <div class="indicator" id="ind-pagi">
+            <span class="indicator-mark">—</span>
+            <span>Blok Pagi</span>
+          </div>
+          <div class="indicator" id="ind-siang">
+            <span class="indicator-mark">—</span>
+            <span>Blok Siang</span>
+          </div>
+          <div class="indicator" id="ind-malam">
+            <span class="indicator-mark">—</span>
+            <span>Blok Malam</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B. QUICK CHECKLIST -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">B. Quick Checklist</span>
+        <span class="section-label" style="color:var(--text-dimmer)" id="checklistProgress">0 / 8</span>
+      </div>
+      <div class="section-body">
+
+        <!-- BLOK PAGI -->
+        <div class="block-header">
+          <span class="block-title">Blok Pagi</span>
+          <span class="block-status-text" id="status-pagi">—</span>
+        </div>
+        <div id="checklist-pagi">
+          <div class="checklist-item" onclick="toggleCheck('p1')">
+            <div class="check-box" id="cb-p1"></div>
+            <div class="check-text" id="ct-p1">Tidak buka Instagram/reels 60 menit pertama</div>
+          </div>
+          <div class="checklist-item" onclick="toggleCheck('p2')">
+            <div class="check-box" id="cb-p2"></div>
+            <div class="check-text" id="ct-p2">Tidak konsumsi konten pasif</div>
+          </div>
+          <div class="checklist-item" onclick="toggleCheck('p3')">
+            <div class="check-box" id="cb-p3"></div>
+            <div class="check-text" id="ct-p3">Langsung aktivitas</div>
+          </div>
+        </div>
+
+        <hr class="block-separator">
+
+        <!-- BLOK SIANG -->
+        <div class="block-header">
+          <span class="block-title">Blok Siang</span>
+          <span class="block-status-text" id="status-siang">—</span>
+        </div>
+        <div id="checklist-siang">
+          <div class="checklist-item" onclick="toggleCheck('s1')">
+            <div class="check-box" id="cb-s1"></div>
+            <div class="check-text" id="ct-s1">Tidak scroll lebih dari 10 menit</div>
+          </div>
+          <div class="checklist-item" onclick="toggleCheck('s2')">
+            <div class="check-box" id="cb-s2"></div>
+            <div class="check-text" id="ct-s2">Trigger → interrupt kurang dari 60 detik</div>
+          </div>
+        </div>
+
+        <hr class="block-separator">
+
+        <!-- BLOK MALAM -->
+        <div class="block-header">
+          <span class="block-title">Blok Malam</span>
+          <span class="block-status-text" id="status-malam">—</span>
+        </div>
+        <div id="checklist-malam">
+          <div class="checklist-item" onclick="toggleCheck('m1')">
+            <div class="check-box" id="cb-m1"></div>
+            <div class="check-text" id="ct-m1">Tidak short-form content</div>
+          </div>
+          <div class="checklist-item" onclick="toggleCheck('m2')">
+            <div class="check-box" id="cb-m2"></div>
+            <div class="check-text" id="ct-m2">Tidak idle dengan HP</div>
+          </div>
+          <div class="checklist-item" onclick="toggleCheck('m3')">
+            <div class="check-box" id="cb-m3"></div>
+            <div class="check-text" id="ct-m3">Trigger → delay + interrupt</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- C. EMERGENCY ACTION -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">C. Emergency Action</span>
+        <span class="section-label" style="color:var(--text-dimmer)">eksekusi cepat</span>
+      </div>
+      <div class="section-body">
+        <div class="emergency-grid">
+          <button class="btn btn-danger btn-full" onclick="openTriggerModal()">⚡ TRIGGER TERJADI</button>
+          <button class="btn btn-action" onclick="emergencyAction('interrupt')">✓ INTERRUPT SUDAH DILAKUKAN</button>
+          <button class="btn btn-neutral" onclick="emergencyAction('delay')">⏱ DELAY 10 MENIT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- D. LOG SINGKAT -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">D. Log Singkat</span>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label">Trigger</label>
+            <select class="form-select" id="logTrigger">
+              <option value="">— pilih —</option>
+              <option>Reels</option>
+              <option>Bosan</option>
+              <option>Sendiri</option>
+              <option>Stress</option>
+              <option>Malam larut</option>
+              <option>Lainnya</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Pelanggaran</label>
+            <select class="form-select" id="logViolation">
+              <option value="">— pilih —</option>
+              <option>Buka Instagram pagi</option>
+              <option>PMO</option>
+              <option>Scroll >10 menit</option>
+              <option>Short-form malam</option>
+              <option>Idle dengan HP</option>
+              <option>Lainnya</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Catatan</label>
+          <textarea class="form-textarea" id="logNotes" placeholder="1–2 kalimat..." maxlength="200"></textarea>
+        </div>
+        <button class="btn" onclick="saveLog()" style="margin-top:4px;">SIMPAN LOG HARI INI</button>
+      </div>
+    </div>
+
+  </div><!-- /page-dashboard -->
+
+
+  <!-- ══════════════════════════════════════
+       PAGE: RULES
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-rules">
+
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-dimmer);padding:0 0 12px;">SYSTEM RULES — READ-ONLY</div>
+
+    <!-- CRITICAL RULE -->
+    <div class="rule-block critical">
+      <div class="rule-block-header">⛔ CRITICAL RULE</div>
+      <div class="rule-block-body">
+        <div class="rule-item">
+          <div class="rule-num">1.</div>
+          <div>Tidak buka Instagram pagi hari</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">2.</div>
+          <div>Tidak PMO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- A SETUP -->
+    <div class="rule-block">
+      <div class="rule-block-header" style="color:var(--ongoing-dot);">⚠ A SETUP — HIGH RISK</div>
+      <div class="rule-block-body">
+        <div class="rule-item">
+          <div class="rule-num">—</div>
+          <div>Reels + sendirian + idle</div>
+        </div>
+        <div class="rule-action-box">
+          <div class="arrow">→ </div>Interrupt dalam kurang dari 60 detik<br>
+          <div class="arrow">→ </div>Ubah kondisi fisik (berdiri, pindah ruangan, cuci muka)
+        </div>
+      </div>
+    </div>
+
+    <!-- INVALID DAY -->
+    <div class="rule-block">
+      <div class="rule-block-header">✖ INVALID DAY</div>
+      <div class="rule-block-body">
+        <div class="rule-item">
+          <div class="rule-num">—</div>
+          <div>1 pelanggaran = hari gagal</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">—</div>
+          <div>Tidak bisa diperbaiki setelah terjadi</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST-INVALID MODE -->
+    <div class="rule-block">
+      <div class="rule-block-header">↩ POST-INVALID MODE</div>
+      <div class="rule-block-body">
+        <div class="rule-item">
+          <div class="rule-num">1.</div>
+          <div>24 jam tanpa reels</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">2.</div>
+          <div>HP hanya untuk fungsi penting</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">3.</div>
+          <div>Semua trigger diklasifikasikan sebagai A Setup</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-rules -->
+
+
+  <!-- ══════════════════════════════════════
+       PAGE: ANALYTICS
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-analytics">
+
+    <!-- A. WEEKLY SCORE -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">A. Weekly Score</span>
+        <span class="section-label" style="color:var(--text-dimmer)" id="analyticsWeek">—</span>
+      </div>
+      <div class="section-body">
+        <div class="score-grid">
+          <div class="score-card valid-card">
+            <div class="score-number" id="scoreValid">0</div>
+            <div class="score-label">VALID / 7</div>
+          </div>
+          <div class="score-card invalid-card">
+            <div class="score-number" id="scoreInvalid">0</div>
+            <div class="score-label">INVALID / 7</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B. FAILURE PATTERN -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">B. Failure Pattern</span>
+      </div>
+      <div class="section-body">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text-dimmer);margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Paling sering gagal di:</div>
+        <div id="failureBlok">
+          <div class="pattern-item">
+            <span class="pattern-key">Pagi</span>
+            <span class="pattern-val" id="fp-pagi">0x</span>
+          </div>
+          <div class="pattern-item">
+            <span class="pattern-key">Siang</span>
+            <span class="pattern-val" id="fp-siang">0x</span>
+          </div>
+          <div class="pattern-item">
+            <span class="pattern-key">Malam</span>
+            <span class="pattern-val" id="fp-malam">0x</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text-dimmer);margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Trigger paling sering:</div>
+        <div id="failureTrigger">
+          <div class="pattern-item">
+            <span class="pattern-key">Reels</span>
+            <span class="pattern-val" id="ft-reels">0x</span>
+          </div>
+          <div class="pattern-item">
+            <span class="pattern-key">Bosan</span>
+            <span class="pattern-val" id="ft-bosan">0x</span>
+          </div>
+          <div class="pattern-item">
+            <span class="pattern-key">Sendiri</span>
+            <span class="pattern-val" id="ft-sendiri">0x</span>
+          </div>
+          <div class="pattern-item">
+            <span class="pattern-key">Stress</span>
+            <span class="pattern-val" id="ft-stress">0x</span>
+          </div>
+          <div class="pattern-item">
+            <span class="pattern-key">Lainnya</span>
+            <span class="pattern-val" id="ft-other">0x</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C. TREND -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">C. Trend — Valid Days per Minggu</span>
+      </div>
+      <div class="section-body">
+        <div class="chart-wrap" id="trendChart">
+          <!-- generated by JS -->
+        </div>
+        <div style="display:flex;gap:16px;margin-top:4px;">
+          <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--text-dimmer);">
+            <div style="width:10px;height:10px;background:var(--valid-dot);opacity:0.7;"></div> ≥5
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--text-dimmer);">
+            <div style="width:10px;height:10px;background:var(--ongoing-dot);opacity:0.7;"></div> 3–4
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--text-dimmer);">
+            <div style="width:10px;height:10px;background:var(--invalid-dot);opacity:0.7;"></div> ≤2
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-analytics -->
+
+
+  <!-- ══════════════════════════════════════
+       PAGE: HISTORY
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-history">
+
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all', this)">SEMUA</button>
+      <button class="filter-btn" onclick="setFilter('invalid', this)">INVALID SAJA</button>
+      <button class="filter-btn" onclick="setFilter('pmo', this)">DENGAN PMO</button>
+    </div>
+
+    <div id="historyList">
+      <div class="empty-state">Belum ada data.<br>Isi log dari dashboard.</div>
+    </div>
+
+  </div><!-- /page-history -->
+
+</div><!-- /app -->
+
+
+<!-- TRIGGER MODAL -->
+<div class="modal-overlay" id="triggerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">⚡ TRIGGER TERJADI</span>
+      <button class="modal-close" onclick="closeTriggerModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-trigger-text">JANGAN LANJUTKAN.</div>
+      <div class="modal-instruction">Kondisi ini adalah A Setup. Eksekusi langkah berikut sekarang, urut, tanpa jeda:</div>
+      <div class="modal-steps">
+        <div class="modal-step"><span class="modal-step-num">01</span> Tutup semua konten. Letakkan HP.</div>
+        <div class="modal-step"><span class="modal-step-num">02</span> Berdiri. Pindah posisi fisik.</div>
+        <div class="modal-step"><span class="modal-step-num">03</span> Cuci muka atau minum air.</div>
+        <div class="modal-step"><span class="modal-step-num">04</span> Tahan 60 detik tanpa HP.</div>
+        <div class="modal-step"><span class="modal-step-num">05</span> Tekan "INTERRUPT DONE" jika berhasil.</div>
+      </div>
+      <div id="delayCountdown" style="display:none;font-family:var(--mono);font-size:28px;font-weight:700;text-align:center;color:var(--ongoing-dot);padding:10px 0;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-action" onclick="modalInterruptDone()">✓ INTERRUPT DONE</button>
+      <button class="btn btn-neutral" onclick="startDelay()">⏱ DELAY 10 MIN</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+const STATE_KEY = 'dm_state_v2';
+const HISTORY_KEY = 'dm_history_v2';
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getState() {
+  const raw = localStorage.getItem(STATE_KEY);
+  if (!raw) return defaultState();
+  try { return JSON.parse(raw); } catch { return defaultState(); }
+}
+
+function defaultState() {
+  return {
+    date: todayKey(),
+    checks: { p1:false, p2:false, p3:false, s1:false, s2:false, m1:false, m2:false, m3:false },
+    status: 'ongoing', // valid | invalid | ongoing
+    postInvalid: false,
+    logTrigger: '',
+    logViolation: '',
+    logNotes: ''
+  };
+}
+
+function getHistory() {
+  const raw = localStorage.getItem(HISTORY_KEY);
+  if (!raw) return [];
+  try { return JSON.parse(raw); } catch { return []; }
+}
+
+function saveState(s) { localStorage.setItem(STATE_KEY, JSON.stringify(s)); }
+function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+
+// Reset state if new day
+function ensureTodayState() {
+  let s = getState();
+  const today = todayKey();
+  if (s.date !== today) {
+    // Archive yesterday if not yet archived
+    archiveDay(s);
+    s = defaultState();
+    s.date = today;
+    // Check if yesterday was invalid → post-invalid mode
+    const h = getHistory();
+    const yesterday = h[h.length-1];
+    if (yesterday && yesterday.status === 'invalid') {
+      s.postInvalid = true;
+    }
+    saveState(s);
+  }
+  return s;
+}
+
+function archiveDay(s) {
+  if (!s.date) return;
+  const h = getHistory();
+  const existing = h.find(x => x.date === s.date);
+  if (!existing) {
+    h.push({
+      date: s.date,
+      status: s.status === 'ongoing' ? 'ongoing' : s.status,
+      trigger: s.logTrigger || '',
+      violation: s.logViolation || '',
+      notes: s.logNotes || ''
+    });
+    saveHistory(h);
+  }
+}
+
+// ══════════════════════════════════════
+// RENDER DASHBOARD
+// ══════════════════════════════════════
+function renderDashboard() {
+  const s = ensureTodayState();
+
+  // Date
+  const d = new Date();
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+  const dateStr = `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  document.getElementById('statusDate').textContent = dateStr;
+  document.getElementById('headerDate').textContent = todayKey();
+
+  // Status badge
+  const badge = document.getElementById('statusBadge');
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  badge.className = 'status-badge ' + s.status;
+  dot.className = 'status-dot dot-' + s.status;
+  txt.textContent = s.status.toUpperCase();
+
+  // Indicators
+  const pagiDone = s.checks.p1 && s.checks.p2 && s.checks.p3;
+  const siangDone = s.checks.s1 && s.checks.s2;
+  const malamDone = s.checks.m1 && s.checks.m2 && s.checks.m3;
+
+  setIndicator('ind-pagi', 'Blok Pagi', pagiDone, s.status);
+  setIndicator('ind-siang', 'Blok Siang', siangDone, s.status);
+  setIndicator('ind-malam', 'Blok Malam', malamDone, s.status);
+
+  // Checklist
+  const checks = ['p1','p2','p3','s1','s2','m1','m2','m3'];
+  let doneCount = 0;
+  checks.forEach(id => {
+    const cb = document.getElementById('cb-'+id);
+    const ct = document.getElementById('ct-'+id);
+    if (s.status === 'invalid' && !s.checks[id]) {
+      cb.className = 'check-box violated';
+      cb.textContent = '✖';
+      ct.className = 'check-text';
+    } else if (s.checks[id]) {
+      cb.className = 'check-box checked';
+      cb.textContent = '✔';
+      ct.className = 'check-text checked';
+      doneCount++;
+    } else {
+      cb.className = 'check-box';
+      cb.textContent = '';
+      ct.className = 'check-text';
+    }
+  });
+  document.getElementById('checklistProgress').textContent = `${doneCount} / 8`;
+
+  // Block status texts
+  setBlockStatus('status-pagi', [s.checks.p1, s.checks.p2, s.checks.p3]);
+  setBlockStatus('status-siang', [s.checks.s1, s.checks.s2]);
+  setBlockStatus('status-malam', [s.checks.m1, s.checks.m2, s.checks.m3]);
+
+  // Post-invalid banner
+  const banner = document.getElementById('postInvalidBanner');
+  if (s.postInvalid) banner.classList.add('show');
+  else banner.classList.remove('show');
+
+  // Log form prefill
+  document.getElementById('logTrigger').value = s.logTrigger || '';
+  document.getElementById('logViolation').value = s.logViolation || '';
+  document.getElementById('logNotes').value = s.logNotes || '';
+}
+
+function setIndicator(id, label, done, status) {
+  const el = document.getElementById(id);
+  if (status === 'invalid') {
+    el.className = done ? 'indicator done' : 'indicator fail';
+    el.innerHTML = `<span class="indicator-mark">${done ? '✔' : '✖'}</span><span>${label}</span>`;
+  } else if (done) {
+    el.className = 'indicator done';
+    el.innerHTML = `<span class="indicator-mark">✔</span><span>${label}</span>`;
+  } else {
+    el.className = 'indicator';
+    el.innerHTML = `<span class="indicator-mark">—</span><span>${label}</span>`;
+  }
+}
+
+function setBlockStatus(id, arr) {
+  const done = arr.filter(Boolean).length;
+  const total = arr.length;
+  const el = document.getElementById(id);
+  el.textContent = `${done}/${total}`;
+  el.style.color = done === total ? 'var(--valid-dot)' : (done === 0 ? 'var(--text-dimmer)' : 'var(--ongoing-dot)');
+}
+
+// ══════════════════════════════════════
+// TOGGLE CHECK
+// ══════════════════════════════════════
+function toggleCheck(id) {
+  const s = getState();
+  if (s.status === 'invalid') {
+    showToast('Status sudah INVALID — hari ini tidak bisa diperbaiki.', 'danger');
+    return;
+  }
+  s.checks[id] = !s.checks[id];
+  saveState(s);
+  renderDashboard();
+}
+
+// ══════════════════════════════════════
+// EMERGENCY ACTIONS
+// ══════════════════════════════════════
+function openTriggerModal() {
+  document.getElementById('triggerModal').classList.add('show');
+  document.getElementById('delayCountdown').style.display = 'none';
+}
+function closeTriggerModal() {
+  document.getElementById('triggerModal').classList.remove('show');
+  clearInterval(delayTimer);
+}
+function modalInterruptDone() {
+  closeTriggerModal();
+  showToast('Interrupt dilakukan. Lanjutkan aktivitas.', 'success');
+}
+
+let delayTimer = null;
+function startDelay() {
+  clearInterval(delayTimer);
+  let sec = 600;
+  const cd = document.getElementById('delayCountdown');
+  cd.style.display = 'block';
+  function tick() {
+    const m = Math.floor(sec/60);
+    const s2 = sec % 60;
+    cd.textContent = `${String(m).padStart(2,'0')}:${String(s2).padStart(2,'0')}`;
+    if (sec <= 0) {
+      clearInterval(delayTimer);
+      cd.textContent = 'SELESAI';
+    }
+    sec--;
+  }
+  tick();
+  delayTimer = setInterval(tick, 1000);
+}
+
+function emergencyAction(type) {
+  if (type === 'interrupt') showToast('Interrupt tercatat.', 'success');
+  if (type === 'delay') {
+    showToast('Delay 10 menit dimulai.', '');
+    // also open modal for countdown
+    openTriggerModal();
+    startDelay();
+  }
+}
+
+// ══════════════════════════════════════
+// SAVE LOG
+// ══════════════════════════════════════
+function saveLog() {
+  const s = getState();
+  s.logTrigger = document.getElementById('logTrigger').value;
+  s.logViolation = document.getElementById('logViolation').value;
+  s.logNotes = document.getElementById('logNotes').value.trim();
+
+  // If violation selected and not already invalid → mark invalid
+  if (s.logViolation && s.status !== 'invalid') {
+    s.status = 'invalid';
+    s.postInvalid = true;
+    showToast('Status → INVALID. Post-Invalid Mode aktif.', 'danger');
+  }
+  // If all 8 checks done and no violation → valid
+  const allChecks = ['p1','p2','p3','s1','s2','m1','m2','m3'];
+  const allDone = allChecks.every(id => s.checks[id]);
+  if (allDone && !s.logViolation && s.status !== 'invalid') {
+    s.status = 'valid';
+  }
+
+  saveState(s);
+
+  // Archive to history
+  const h = getHistory();
+  const idx = h.findIndex(x => x.date === s.date);
+  const entry = {
+    date: s.date,
+    status: s.status,
+    trigger: s.logTrigger,
+    violation: s.logViolation,
+    notes: s.logNotes
+  };
+  if (idx >= 0) h[idx] = entry;
+  else h.push(entry);
+  saveHistory(h);
+
+  renderDashboard();
+  showToast('Log tersimpan.', 'success');
+}
+
+// ══════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════
+function renderAnalytics() {
+  const h = getHistory();
+
+  // Get current week (Mon–Sun)
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  monday.setHours(0,0,0,0);
+
+  const weekEntries = h.filter(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    return d >= monday && d <= today;
+  });
+
+  const validCount = weekEntries.filter(e => e.status === 'valid').length;
+  const invalidCount = weekEntries.filter(e => e.status === 'invalid').length;
+
+  document.getElementById('scoreValid').textContent = validCount;
+  document.getElementById('scoreInvalid').textContent = invalidCount;
+
+  // Week label
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = d => `${d.getDate()}/${d.getMonth()+1}`;
+  document.getElementById('analyticsWeek').textContent = `${fmt(monday)} – ${fmt(sunday)}`;
+
+  // Failure patterns from all history
+  const fp = { pagi: 0, siang: 0, malam: 0 };
+  const ft = { reels: 0, bosan: 0, sendiri: 0, stress: 0, other: 0 };
+
+  h.filter(e => e.status === 'invalid').forEach(e => {
+    const v = (e.violation || '').toLowerCase();
+    if (v.includes('instagram') || v.includes('pagi')) fp.pagi++;
+    if (v.includes('scroll') || v.includes('siang')) fp.siang++;
+    if (v.includes('short') || v.includes('idle') || v.includes('malam')) fp.malam++;
+    // PMO could be any time — count as pattern not block-specific
+
+    const t = (e.trigger || '').toLowerCase();
+    if (t.includes('reels')) ft.reels++;
+    else if (t.includes('bosan')) ft.bosan++;
+    else if (t.includes('sendiri')) ft.sendiri++;
+    else if (t.includes('stress')) ft.stress++;
+    else if (t) ft.other++;
+  });
+
+  document.getElementById('fp-pagi').textContent = fp.pagi + 'x';
+  document.getElementById('fp-siang').textContent = fp.siang + 'x';
+  document.getElementById('fp-malam').textContent = fp.malam + 'x';
+  document.getElementById('ft-reels').textContent = ft.reels + 'x';
+  document.getElementById('ft-bosan').textContent = ft.bosan + 'x';
+  document.getElementById('ft-sendiri').textContent = ft.sendiri + 'x';
+  document.getElementById('ft-stress').textContent = ft.stress + 'x';
+  document.getElementById('ft-other').textContent = ft.other + 'x';
+
+  // Trend chart — last 8 weeks
+  renderTrendChart(h);
+}
+
+function renderTrendChart(h) {
+  const chart = document.getElementById('trendChart');
+  chart.innerHTML = '';
+
+  // Build weeks
+  const today = new Date();
+  const weeks = [];
+  for (let w = 7; w >= 0; w--) {
+    const mon = new Date(today);
+    const dow = today.getDay();
+    mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) - (w * 7));
+    mon.setHours(0,0,0,0);
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    sun.setHours(23,59,59,999);
+    weeks.push({ mon, sun, label: `W${8-w}` });
+  }
+
+  weeks.forEach((wk, i) => {
+    const entries = h.filter(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      return d >= wk.mon && d <= wk.sun;
+    });
+    const valid = entries.filter(e => e.status === 'valid').length;
+    const pct = Math.round((valid / 7) * 100);
+    const cls = valid >= 5 ? 'high' : valid >= 3 ? 'mid' : 'low';
+
+    const col = document.createElement('div');
+    col.className = 'chart-col';
+    col.innerHTML = `
+      <div class="chart-bar ${cls}" style="height:${pct}%;"></div>
+      <div class="chart-label">${wk.label}</div>
+    `;
+    // tooltip
+    col.title = `${valid}/7 valid`;
+    chart.appendChild(col);
+  });
+}
+
+// ══════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════
+let currentFilter = 'all';
+
+function renderHistory() {
+  const h = getHistory().slice().reverse(); // newest first
+  const list = document.getElementById('historyList');
+
+  let filtered = h;
+  if (currentFilter === 'invalid') filtered = h.filter(e => e.status === 'invalid');
+  if (currentFilter === 'pmo') filtered = h.filter(e => (e.violation || '').toLowerCase().includes('pmo'));
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state">Tidak ada data untuk filter ini.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => {
+    const statusClass = e.status;
+    const tagClass = e.status;
+    return `
+      <div class="history-item ${statusClass}">
+        <div class="history-top">
+          <div class="history-date">${e.date}</div>
+          <div class="history-tag ${tagClass}">${(e.status || 'ONGOING').toUpperCase()}</div>
+        </div>
+        <div class="history-meta">
+          ${e.trigger ? `<div><span>TRIGGER</span>${e.trigger}</div>` : ''}
+          ${e.violation ? `<div><span>PELANGGARAN</span>${e.violation}</div>` : ''}
+        </div>
+        ${e.notes ? `<div class="history-note">${e.notes}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHistory();
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.textContent.toLowerCase().replace('dashboard','dashboard') === name ||
+        b.getAttribute('onclick').includes(name)) b.classList.add('active');
+  });
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'analytics') renderAnalytics();
+  if (name === 'history') renderHistory();
+}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+let toastTimer = null;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  renderDashboard();
+});
+</script>
+</body>
+</html>
